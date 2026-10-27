@@ -68,14 +68,10 @@ const API_BASE="";
 const POLL_INTERVAL=4000;
 
 /* ================================================================
-   AGENTS — edit this block to add / change agents.
-   • Two sections: "bhfl" (Bajaj Housing Finance) and "bfs" (Bajaj Finserv).
-   • Every agent listed here is shown in its section.
-   • Replace each "AGENT_ID_..." with the real Hunar agent ID. Until then the
-     tile is shown but its call button stays off.
-   • fields = the details asked before a call; they're sent as custom_data.
-     Use the variable names your agent prompt expects as "key".
-     Example: fields:[{key:"loan_amount",label:"Loan amount",placeholder:"e.g. 2500000"}]
+   AGENTS load live from Hunar (/api/agents), one API key per section:
+   HUNAR_API_KEY_BHFL and HUNAR_API_KEY_BFS in Vercel. Every ACTIVE agent on
+   that key shows up (Archived ones are hidden, Drafts are marked). The agent's custom variables become the fields asked
+   before a call, pre-filled with its saved test values.
    ================================================================ */
 // BHFL logo mark (round "B"), embedded so the site needs no image files.
 const BHFL_LOGO="data:image/png;base64,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";
@@ -91,15 +87,6 @@ const SECTIONS={
     hex:"#3A6AAE",
     logo:BHFL_LOGO,
     about:"Home loan agents for balance transfer, top-up and customer follow-ups.",
-    agents:[
-      {id:"AGENT_ID_BHFL_1",name:"Riya",useCase:"Home Loan Balance Transfer",lang:"Hindi",langNative:"हिन्दी",
-        desc:"Qualifies customers who have a home loan with another bank, shares an indicative top-up amount and books a call with a Sales Manager.",
-        fields:[]},
-      {id:"AGENT_ID_BHFL_2",name:"Agent 2",useCase:"Add use case",lang:"English",langNative:"English",
-        desc:"Add a short description of what this agent does.",fields:[]},
-      {id:"AGENT_ID_BHFL_3",name:"Agent 3",useCase:"Add use case",lang:"Marathi",langNative:"मराठी",
-        desc:"Add a short description of what this agent does.",fields:[]},
-    ],
   },
   bfs:{
     key:"bfs",
@@ -109,14 +96,6 @@ const SECTIONS={
     hex:"#3E72B5",
     logo:BFS_LOGO,
     about:"Lending and customer-service agents for Bajaj Finserv products.",
-    agents:[
-      {id:"AGENT_ID_BFS_1",name:"Agent 1",useCase:"Add use case",lang:"Hindi",langNative:"हिन्दी",
-        desc:"Add a short description of what this agent does.",fields:[]},
-      {id:"AGENT_ID_BFS_2",name:"Agent 2",useCase:"Add use case",lang:"English",langNative:"English",
-        desc:"Add a short description of what this agent does.",fields:[]},
-      {id:"AGENT_ID_BFS_3",name:"Agent 3",useCase:"Add use case",lang:"Tamil",langNative:"தமிழ்",
-        desc:"Add a short description of what this agent does.",fields:[]},
-    ],
   },
 };
 const SECTION_ORDER=["bhfl","bfs"];
@@ -139,7 +118,15 @@ const STATUS_META={
 const PIPELINE=["NOT_STARTED","SCHEDULED","INITIATED","RINGING","IN_PROGRESS","COMPLETED"];
 const TERMINAL=["COMPLETED","NOT_CONNECTED","CANCELLED","FAILED"];
 
-const isPlaceholder=a=>a.id.startsWith("AGENT_ID_");
+const LANGS={ENGLISH:["English","English"],HINDI:["Hindi","हिन्दी"],TAMIL:["Tamil","தமிழ்"],TELUGU:["Telugu","తెలుగు"],KANNADA:["Kannada","ಕನ್ನಡ"],MARATHI:["Marathi","मराठी"],MALAYALAM:["Malayalam","മലയാളം"],GUJARATI:["Gujarati","ગુજરાતી"],BENGALI:["Bengali","বাংলা"],TURKISH:["Turkish","Türkçe"],ARABIC:["Arabic","العربية"],SPANISH:["Spanish","Español"]};
+const nice=k=>k.replace(/_/g," ").replace(/^./,c=>c.toUpperCase());
+// Turn an /api/agents record into what the tiles use.
+function toAgent(a){
+  const[lang,langNative]=LANGS[a.language]||[nice(a.language.toLowerCase()),nice(a.language.toLowerCase())];
+  return{id:a.id,status:a.status,useCase:a.name,name:a.persona||"",lang,langNative,code:a.code,
+    desc:a.summary||"",
+    fields:(a.variables||[]).map(v=>({key:v,label:nice(v),placeholder:a.sample_values?.[v]?`e.g. ${a.sample_values[v]}`:"",initial:a.sample_values?.[v]||""}))};
+}
 function fmtMobile(cc,m){const c=m.replace(/\D/g,"");return cc==="+91"?c.slice(-10):`${cc}${c}`;}
 function fmtDur(s){if(!s)return"—";const mm=Math.floor(s/60),ss=Math.round(s%60);return mm>0?`${mm}m ${ss}s`:`${ss}s`;}
 function dispNum(u){if(!u)return"";return u.countryCode==="+91"?u.mobile.replace(/\D/g,"").slice(-10):`${u.countryCode}${u.mobile.replace(/\D/g,"")}`;}
@@ -196,14 +183,14 @@ function SectionMark({s,size=44,ring=false}){
     :<span aria-hidden="true" style={{...st,background:s.hex,color:"#fff",display:"inline-flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:size*.48}}>{s.short[0]}</span>;
 }
 
-function SectionPicker({onPick}){
+function SectionPicker({onPick,agents}){
   return(
     <div className="wrap enter">
       <h1 style={{fontSize:34,fontWeight:800,letterSpacing:"-.025em",lineHeight:1.15,marginBottom:10}}>Bajaj Voice AI Playground</h1>
       <p style={{fontSize:16,color:"var(--ink-2)",maxWidth:560,lineHeight:1.55,marginBottom:32}}>Pick a business to see its voice agents.</p>
       <div className="pick">
         {SECTION_ORDER.map(k=>{
-          const s=SECTIONS[k], live=s.agents.filter(a=>!isPlaceholder(a)).length;
+          const s=SECTIONS[k], st=agents[k]||{};
           return(
             <button key={k} onClick={()=>onPick(k)} style={{...S.card,textAlign:"left",padding:0,cursor:"pointer",overflow:"hidden",color:"var(--ink)"}}>
               <div style={{borderTop:`5px solid ${s.hex}`,padding:"24px 26px 4px",display:"flex",alignItems:"center",gap:16}}>
@@ -212,7 +199,7 @@ function SectionPicker({onPick}){
               </div>
               <div style={{padding:"18px 26px 22px"}}>
                 <p style={{fontSize:15,color:"var(--ink-2)",lineHeight:1.5,marginBottom:14}}>{s.about}</p>
-                <p style={{fontSize:14,fontWeight:600}}>{s.agents.length} agents{live<s.agents.length?`, ${live} ready to call`:""}</p>
+                <p style={{fontSize:14,fontWeight:600,color:st.error?"var(--bad)":"var(--ink)"}}>{st.list?`${st.list.length} agent${st.list.length===1?"":"s"}`:st.error?"Couldn't load agents":"Loading agents…"}</p>
               </div>
             </button>
           );
@@ -254,16 +241,16 @@ function DetailsScreen({section,onSave}){
 }
 
 function AgentCard({ag,section,busy,onCall}){
-  const s=SECTIONS[section], plc=isPlaceholder(ag), mine=busy===ag.id;
+  const s=SECTIONS[section], plc=false, mine=busy===ag.id;
   return(
     <div style={{...S.card,padding:22,display:"flex",flexDirection:"column",borderTop:`4px solid ${plc?"var(--line)":s.hex}`}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:12}}>
         <span style={{fontSize:13,fontWeight:600,color:s.hex,background:s.hex+"14",padding:"4px 10px",borderRadius:20}}>{ag.langNative}{ag.langNative!==ag.lang?` · ${ag.lang}`:""}</span>
-        {plc&&<span style={{fontSize:12,fontWeight:600,color:"var(--warn)"}}>Agent ID needed</span>}
+        {ag.status==="DRAFT"&&<span title="This agent is a draft in Hunar. Calls may fail until it's published." style={{fontSize:12,fontWeight:600,color:"var(--warn)"}}>Draft</span>}
       </div>
       <h3 style={{fontSize:18,fontWeight:700,letterSpacing:"-.01em",marginBottom:2}}>{ag.useCase}</h3>
-      <p style={{fontSize:14,color:"var(--ink-3)",marginBottom:10}}>{ag.name}</p>
-      <p style={{fontSize:14,color:"var(--ink-2)",lineHeight:1.5,marginBottom:18,flex:1}}>{ag.desc}</p>
+      <p style={{fontSize:14,color:"var(--ink-3)",marginBottom:10}}>{[ag.name&&`Voice: ${ag.name}`,ag.fields.length?`${ag.fields.length} detail${ag.fields.length>1?"s":""} to fill`:null].filter(Boolean).join(", ")}</p>
+      <p style={{fontSize:14,color:"var(--ink-2)",lineHeight:1.5,marginBottom:18,flex:1}}>{ag.desc||" "}</p>
       <button onClick={()=>onCall(ag)} disabled={plc||busy!==null} style={{...S.primary(!plc&&busy===null,s.hex),width:"100%",fontSize:14,padding:"12px 16px"}}>
         {mine?<><div style={{width:15,height:15,border:"2px solid #fff6",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .8s linear infinite"}}/>Starting call</>:<><PhoneIcon/>{plc?"Add agent ID to call":"Start call"}</>}
       </button>
@@ -272,12 +259,13 @@ function AgentCard({ag,section,busy,onCall}){
   );
 }
 
-function AgentsScreen({section,user,busy,error,onCall}){
+function AgentsScreen({section,user,busy,error,onCall,state,onRetry}){
   const s=SECTIONS[section];
-  const langs=[...new Set(s.agents.map(a=>a.lang))];
+  const all=state?.list||[];
+  const langs=[...new Set(all.map(a=>a.lang))];
   const[lang,setLang]=useState("All");
   useEffect(()=>setLang("All"),[section]);
-  const list=s.agents.filter(a=>lang==="All"||a.lang===lang);
+  const list=all.filter(a=>lang==="All"||a.lang===lang);
   return(
     <div className="wrap">
       <div className="enter" style={{marginBottom:26}}>
@@ -290,13 +278,16 @@ function AgentsScreen({section,user,busy,error,onCall}){
       {langs.length>1&&(
         <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
           {["All",...langs].map(l=>{
-            const on=l===lang, n=l==="All"?s.agents.length:s.agents.filter(a=>a.lang===l).length;
+            const on=l===lang, n=l==="All"?all.length:all.filter(a=>a.lang===l).length;
             return <button key={l} onClick={()=>setLang(l)} aria-pressed={on} style={{padding:"7px 14px",borderRadius:20,border:`1px solid ${on?s.hex:"var(--line)"}`,background:on?s.hex:"#fff",color:on?"#fff":"var(--ink-2)",fontSize:13,fontWeight:600,cursor:"pointer"}}>{l} ({n})</button>;
           })}
         </div>
       )}
       <ErrorBox msg={error}/>
-      <div className="grid">{list.map(ag=><AgentCard key={ag.id} ag={ag} section={section} busy={busy} onCall={onCall}/>)}</div>
+      {!state||state.loading?<p style={{fontSize:15,color:"var(--ink-3)",animation:"pulse 2s infinite"}}>Loading {s.short} agents from Hunar…</p>
+       :state.error?<div><ErrorBox msg={`Couldn't load ${s.short} agents: ${state.error}`}/><button onClick={onRetry} style={S.ghost}>Try again</button></div>
+       :all.length===0?<p style={{fontSize:15,color:"var(--ink-2)"}}>No agents found on the {s.short} Hunar account. Check that this section's key belongs to the account where the agents were made.</p>
+       :<div className="grid">{list.map(ag=><AgentCard key={ag.id} ag={ag} section={section} busy={busy} onCall={onCall}/>)}</div>}
     </div>
   );
 }
@@ -304,14 +295,14 @@ function AgentsScreen({section,user,busy,error,onCall}){
 function CallDialog({agent,section,user,onCancel,onStart}){
   const s=SECTIONS[section];
   const fields=agent.fields||[];
-  const[vals,setVals]=useState(()=>Object.fromEntries(fields.map(f=>[f.key,""])));
+  const[vals,setVals]=useState(()=>Object.fromEntries(fields.map(f=>[f.key,f.initial||""])));
   const ok=fields.every(f=>f.required===false||String(vals[f.key]||"").trim());
   useEffect(()=>{const h=e=>e.key==="Escape"&&onCancel();window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);},[onCancel]);
   return(
     <div onClick={onCancel} style={{position:"fixed",inset:0,background:"rgba(14,34,64,.45)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:20}}>
       <div role="dialog" aria-modal="true" className="enter" onClick={e=>e.stopPropagation()} style={{...S.card,width:"100%",maxWidth:440,padding:26,borderTop:`4px solid ${s.hex}`}}>
         <h3 style={{fontSize:20,fontWeight:700,marginBottom:4}}>{agent.useCase}</h3>
-        <p style={{fontSize:14,color:"var(--ink-2)",marginBottom:20}}>{agent.name}, {agent.lang}. Calling {user.firstName} on {dispNum(user)}.</p>
+        <p style={{fontSize:14,color:"var(--ink-2)",marginBottom:20}}>{agent.name?`${agent.name}, `:""}{agent.lang}. Calling {user.firstName} on {dispNum(user)}.</p>
         {fields.length>0&&(
           <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:22}}>
             {fields.map((f,i)=>(
@@ -437,11 +428,24 @@ function App(){
   const[call,setCall]=useState(null);
   const[callData,setCallData]=useState(null);
   const pollRef=useRef(null);
+  const[agents,setAgents]=useState({});            // {bhfl:{loading,list,error}, bfs:{…}}
+
+  const loadAgents=useCallback(async k=>{
+    setAgents(a=>({...a,[k]:{loading:true}}));
+    try{
+      const res=await fetch(`${API_BASE}/api/agents?section=${k}`);
+      const txt=await res.text();let data;
+      try{data=JSON.parse(txt);}catch{throw new Error(res.status===404?"the /api folder isn't deployed":`server error (${res.status})`);}
+      if(!res.ok)throw new Error(data.error||data.detail||data.message||`HTTP ${res.status}`);
+      setAgents(a=>({...a,[k]:{list:data.agents.map(toAgent)}}));
+    }catch(e){setAgents(a=>({...a,[k]:{error:e.message||"network error"}}));}
+  },[]);
+  useEffect(()=>{SECTION_ORDER.forEach(loadAgents);},[loadAgents]);
 
   const stopPoll=()=>{if(pollRef.current){clearInterval(pollRef.current);pollRef.current=null;}};
   useEffect(()=>stopPoll,[]);
 
-  const headersFor=()=>({"Content-Type":"application/json"});
+  const headersFor=sec=>({"Content-Type":"application/json","x-section":sec});
 
   const fetchStatus=useCallback(async(id,sec)=>{
     try{
@@ -495,10 +499,10 @@ function App(){
 
   let body;
   if(page==="about")body=<About/>;
-  else if(page==="home"||!section)body=<SectionPicker onPick={openSection}/>;
+  else if(page==="home"||!section)body=<SectionPicker onPick={openSection} agents={agents}/>;
   else if(!user)body=<DetailsScreen section={section} onSave={f=>setUser({...f,firstName:f.firstName.trim(),lastName:f.lastName.trim()})}/>;
   else if(page==="monitor"&&call)body=<Monitor section={section} call={call} data={callData} user={user} onBack={backToAgents}/>;
-  else body=<AgentsScreen section={section} user={user} busy={busy} error={error} onCall={ag=>{setError(null);setDialog(ag);}}/>;
+  else body=<AgentsScreen section={section} user={user} busy={busy} error={error} state={agents[section]} onRetry={()=>loadAgents(section)} onCall={ag=>{setError(null);setDialog(ag);}}/>;
 
   const navBtn=(active)=>({display:"flex",alignItems:"center",gap:10,width:"100%",padding:"11px 12px",marginBottom:4,background:active?"rgba(255,255,255,.12)":"transparent",border:"none",borderRadius:10,cursor:"pointer",color:active?"#fff":"#B9C4D4",fontSize:14,fontWeight:active?700:500,textAlign:"left"});
 
@@ -518,7 +522,7 @@ function App(){
               <button key={k} onClick={()=>openSection(k)} style={navBtn(active)}>
                 <SectionMark s={s} size={22} ring/>
                 <span style={{flex:1}}>{s.short}</span>
-                <span style={{fontSize:12,color:"#8FA0B8"}}>{s.agents.length}</span>
+                <span style={{fontSize:12,color:"#8FA0B8"}}>{agents[k]?.list?agents[k].list.length:""}</span>
               </button>
             );
           })}
