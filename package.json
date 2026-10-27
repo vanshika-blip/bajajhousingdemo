@@ -1,0 +1,6 @@
+{
+  "name": "bajaj-voice-ai-demo",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "22.x" }
+}
